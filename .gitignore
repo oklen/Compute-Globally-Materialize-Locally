@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+# experiment outputs
+out/*.json
+out/*.jsonl
+!out/.gitkeep
+# datasets (obtain separately, see data/README.md)
+data/*
+!data/README.md
