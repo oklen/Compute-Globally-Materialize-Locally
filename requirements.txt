@@ -1,2 +1,13 @@
-torch>=2.1
-transformers>=4.45
+# Primary (2025) stack -- Qwen3-8B (primary model), Ministral-3, and all synthetic experiments.
+# Pins matter: transformers 4.52 breaks Qwen3 under torch 2.4.1 (ALL_PARALLEL_STYLES NoneType);
+# Qwen3 is supported from transformers 4.51.0.
+torch==2.4.1            # cu121 build (matches a CUDA 12.x / driver 535 host)
+transformers==4.51.3
+accelerate
+
+# 2026-generation checkpoints (Gemma-4-12B, and the tf5 loaders for Ministral-3 / Qwen3.5)
+# require a newer stack -- create a SEPARATE environment for them:
+#     python -m venv tf5env
+#     tf5env/bin/pip install "transformers>=5.10" "torch==2.9.*" accelerate tokenizers huggingface_hub
+# torch 2.9 cu12x is needed so the 535 driver can run it (the default tf5 wheel pulls cu130).
+# See MODEL_AND_ENV_MANIFEST.md for the exact versions used to produce the reported numbers.
