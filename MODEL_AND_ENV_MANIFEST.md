@@ -9,7 +9,7 @@ at the checkpoint / model-instance level, not the family level.
 
 | role | model | HF repo | notes |
 |---|---|---|---|
-| **primary (2025)** | Qwen3-8B | `Qwen/Qwen3-8B` | full attention; the headline results |
+| **2025** | Qwen3-8B | `Qwen/Qwen3-8B` | full attention; carries most experiments |
 | recent | Ministral-3-8B-Instruct | `mistralai/Ministral-3-8B-Instruct-2512` | `Mistral3ForConditionalGeneration`, loaded via `AutoModelForImageTextToText` on the **tf5 stack** (not the classic loader); shipped FP8, dequantized to bf16 compute |
 | recent (2026) | Gemma-4-12B-it | `google/gemma-4-12B-it` | **sliding-window attention** (40/48 layers, window 1024); long-context uses chunked prefill |
 | legacy (2024) | Qwen2.5-7B | `Qwen/Qwen2.5-7B-Instruct` | exploratory diagnostics only |
@@ -77,15 +77,19 @@ Hardware for the reported runs: a single **NVIDIA A100-SXM4-80GB** per job.
 
 | paper element | script(s) |
 |---|---|
-| Table 1 / Fig 1 -- discovery 99:0, overwrite | `kv_causal`, `kv_phantom` |
-| Table 2 / Fig 2(appx) -- 16-construction write bank | `kv_parabank`, `kv_bankprobe` |
-| Table 3 / Fig 2 -- landing 2x2 factorial, true edge, X11 | `kv_causal2`, `kv_causal3`, `kv_poscontrol` |
-| Fig 3 -- access cardinality envelope | `kv_sweepmenu`, `kv_orthobit2`, `kv_bicap`, `kv_digit`, `kv_noteknob2`, `kv_decoyctl2` |
-| Table 7/8/9 / Fig 4 -- X9 carriers, X10 serve-set | `kv_mater2`, `kv_mater3` |
-| Table 6 -- real-dialog passive harvest (X8) | `kv_harvest4`, `x8_audit2`, `kv_harvest3` |
+| Table 1 / Fig 1 -- discovery 99:0, swap probe, overwrite | `kv_causal`, `kv_phantom` |
+| Table 2 / Fig 5 -- 16-construction write bank, logit probe | `kv_parabank`, `kv_bankprobe` |
+| §4 regularity (1) -- length- and background-controlled bank rerun | `kv_parabank2` |
+| Table 3, Table 4 / Fig 2 -- landing 2x2 factorial, true edge, multi-hop | `kv_causal2`, `kv_causal3`, `kv_vardecomp`, `kv_hops`, `kv_refcarrier` |
+| App G -- X11 position-controlled replication | `kv_poscontrol` |
+| Fig 3 -- access cardinality envelope, decoy audit (App E) | `kv_sweepmenu`, `kv_orthobit2`, `kv_bicap`, `kv_digit`, `kv_noteknob2`, `kv_decoyctl2`, `kv_fail2` |
+| Table 7/8/9, Table 10/11 / Fig 4 -- X9 carriers, X10 serve-set, legacy panel | `kv_mater2`, `kv_mater3` |
+| Table 5, Table 6 -- real-dialog passive harvest + injected-carrier control (X8) | `kv_harvest4`, `x8_audit2`, `kv_harvest3` |
+| Table 6 (Gemma-4 rows), App D -- native original-position serving vs. the compact path | `kv_harvnative` |
 | App A -- KV-path compatibility gate (numerical) | `kv_ident`, `kv_identm` |
-| **App D -- sliding-window oracle gate (Gemma-4)** | **`kv_swgate`** |
-| App E -- update patch vs recomputation, timing | `kv_coherence2`, `kv_recomp`, `kv_timing` |
+| **Table 12 / App D -- sliding-window oracle gate (Gemma-4)** | **`kv_swgate`** |
+| App F -- update patch vs recomputation, timing | `kv_coherence2`, `kv_recomp`, `kv_timing` |
+| Robustness (fresh seeds / untuned paraphrase template) | `kv_frozen` |
 
 Each module prints a runnable example in its docstring, e.g.:
 

@@ -38,10 +38,10 @@ models.
 ### Models
 
 Set `SPRAG_MODEL_PATH` to a local HuggingFace directory. The paper's recent models — which carry
-the headline claims — are **Qwen3-8B** (primary), **Ministral-3-8B**, and **Gemma-4-12B**; four
+the headline claims — are **Qwen3-8B**, **Ministral-3-8B**, and **Gemma-4-12B**; four
 2024 checkpoints (**Qwen2.5-7B**, **Gemma-2-9B**, **Mistral-7B-v0.3**, **Llama-3.1-8B**) appear only
-as exploratory legacy diagnostics. 2026 / long-context checkpoints may need chunked prefill
-(`export SPRAG_ENCODE_CHUNK=4096`) and a recent `transformers`.
+as exploratory legacy diagnostics. Most experiments run on Qwen3-8B; 2026 / long-context checkpoints
+may need chunked prefill (`export SPRAG_ENCODE_CHUNK=4096`) and a recent `transformers`.
 
 ### Data (real-dialog experiments only)
 
@@ -55,11 +55,11 @@ The X8 real-dialog audits read two corpora from `./data/` (override with `--lc_p
 | Paper section | Script(s) |
 |---|---|
 | **Discovery** — donor-pair 99:0, swap probe, overwrite | `kv_causal`, `kv_phantom` |
-| **Trigger** — 16-construction write bank (mirror + flag families), logit probe | `kv_parabank`, `kv_bankprobe` |
+| **Trigger** — 16-construction write bank (mirror + flag families), logit probe; length- and background-controlled rerun | `kv_parabank`, `kv_bankprobe`, `kv_parabank2` |
 | **Landing** — 2×2 factorial, true reference edge, X11 position-control, multi-hop | `kv_causal2`, `kv_causal3`, `kv_poscontrol`, `kv_vardecomp`, `kv_hops`, `kv_refcarrier` |
 | **Access** — cardinality envelope, orthogonal bits, capacity, digits, compute-note, decoy audit | `kv_sweepmenu`, `kv_orthobit2`, `kv_bicap`, `kv_digit`, `kv_noteknob2`, `kv_decoyctl2` |
 | **Programming** — X9 carrier arms; X10 serve-set ablation | `kv_mater2`, `kv_mater3` |
-| **Real-dialog stress test** — X8 coverage audit, harvest, injected-carrier control | `x8_audit2`, `kv_harvest3`, `kv_harvest4` |
+| **Real-dialog stress test** — X8 coverage audit, harvest, injected-carrier control; native (original-position, key-masked) serving vs. the compact path | `x8_audit2`, `kv_harvest3`, `kv_harvest4`, `kv_harvnative` |
 | **Update side** — patch vs. recomputation, timing | `kv_coherence2`, `kv_recomp`, `kv_timing` |
 | **Faithfulness gates** — KV-path compatibility, numerical + top-1 margin (App. A); Gemma-4 sliding-window oracle (App. D) | `kv_ident`, `kv_identm`, `kv_swgate` |
 | Robustness (frozen seeds / untuned templates) | `kv_frozen` |
