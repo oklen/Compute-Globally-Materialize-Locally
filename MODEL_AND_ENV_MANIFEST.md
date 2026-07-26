@@ -80,9 +80,11 @@ Hardware for the reported runs: a single **NVIDIA A100-SXM4-80GB** per job.
 | Table 1 / Fig 1 -- discovery 99:0, swap probe, overwrite | `kv_causal`, `kv_phantom` |
 | Table 2 / Fig 5 -- 16-construction write bank, logit probe | `kv_parabank`, `kv_bankprobe` |
 | §4 regularity (1) -- length- and background-controlled bank rerun | `kv_parabank2` |
-| Table 3, Table 4 / Fig 2 -- landing 2x2 factorial, true edge, multi-hop | `kv_causal2`, `kv_causal3`, `kv_vardecomp`, `kv_hops`, `kv_refcarrier` |
+| Table 3, Table 4 / Fig 2 -- landing 2x2 factorial, true edge, multi-hop | `kv_causal2`, `kv_causal3`, `kv_vardecomp`, `kv_refcarrier` |
+| App B -- where in a mirror chain the value sits (depth-3 localisation) | `kv_hops` |
 | App G -- X11 position-controlled replication | `kv_poscontrol` |
-| Fig 3 -- access cardinality envelope, decoy audit (App E) | `kv_sweepmenu`, `kv_orthobit2`, `kv_bicap`, `kv_digit`, `kv_noteknob2`, `kv_decoyctl2`, `kv_fail2` |
+| Fig 3 -- access cardinality envelope, decoy audit (App E) | `kv_sweepmenu`, `kv_bicap`, `kv_digit`, `kv_noteknob2`, `kv_decoyctl2`, `kv_fail2` |
+| App B -- two orthogonal bits over the four-way payload | `kv_orthobit2` |
 | Table 7/8/9, Table 10/11 / Fig 4 -- X9 carriers, X10 serve-set, legacy panel | `kv_mater2`, `kv_mater3` |
 | Table 5, Table 6 -- real-dialog passive harvest + injected-carrier control (X8) | `kv_harvest4`, `x8_audit2`, `kv_harvest3` |
 | Table 6 (Gemma-4 rows), App D -- native original-position serving vs. the compact path | `kv_harvnative` |
