@@ -106,3 +106,7 @@ The sliding-window oracle gate (App D) must run on the tf5 stack:
 SPRAG_MODEL_PATH=/path/to/Gemma-4-12B SPRAG_ATTN_IMPL=sdpa SPRAG_ENCODE_CHUNK=4096 \
 CUDA_VISIBLE_DEVICES=0 tf5env/bin/python -m kvmemory.kv_swgate --items 32 --gap 2600 --seed 1
 ```
+
+`--gap` is the filler budget between the far row and the near row, not the query-to-far-row
+distance the paper's Table 12 reports; each run records the realised distance per item as
+`gap_far` (`--gap 120 / 1200 / 2600` realise ~200 / ~1590 / ~3430).
