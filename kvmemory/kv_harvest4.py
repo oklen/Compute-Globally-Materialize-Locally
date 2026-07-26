@@ -19,8 +19,8 @@ B. PATH POSITIVE CONTROL (donor-paired injected carrier): subset of QAs whose go
      iso_inj    the injected turn encoded alone at the original positions
    follow-donor = pick gold under orig AND pick neg under cf. If follow >> iso/chance the
    encode->harvest->splice->recognition path is demonstrated ON REAL DIALOGUE, making the
-   natural-carrier result interpretable; if the path itself fails, the §6.2 negative stays
-   protocol-scoped (as已降格).
+   natural-carrier result interpretable; if the path itself fails, the real-dialog negative
+   stays scoped to this protocol rather than generalising.
 
 Pre-registered: natural harv - iso equivalence bound +/-.05 (recognition), conversation-
 clustered on LOCOMO (REALTALK descriptive; 3 participant components). Readout: 8-token

@@ -237,7 +237,7 @@ class HFBackend:
             else (n * Lp + sum(self.count_tok(s) for s in suffixes)),
         }
 
-    # ---- KV sub-selection: real cache reuse for selected spans (IMPL_PLAN_B) ----
+    # ---- KV sub-selection: real cache reuse for selected spans ----
 
     @torch.no_grad()
     def _greedy_pos(self, cache: DynamicCache, kept_positions: torch.Tensor,

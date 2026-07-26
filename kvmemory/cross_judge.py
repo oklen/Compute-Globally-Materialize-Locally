@@ -1,12 +1,16 @@
-"""Cross-judge (review #5): re-score already-generated answers with a DIFFERENT-family judge.
+"""Short-answer grading for the free-generation real-dialog arm, plus a cross-family re-judge.
 
-Our controlled ablations use Qwen3-32B as both reader and judge; a reviewer worry is that Qwen judges
-its own generations leniently. We take the saved (question, gold, arm, answer) rows and re-judge every
-answer with a non-Qwen model (Llama-3.1-8B), then check whether the per-arm ACCURACY ORDERING is
-preserved. If verbatim>summary>facts (payload) and pin/lex orderings survive a different-family judge,
-the conclusions are not a judge artifact.
+`judge()` is the one-word yes/no grader `kv_harvest3` calls to score its free-generation answers
+against the gold. It runs on the same checkpoint that produced the answers, so a same-family
+leniency worry applies; every answer is therefore saved, and the CLI below re-scores a saved
+answer file with a DIFFERENT-family checkpoint and reports per-arm accuracy by question type. If
+the arm ordering survives the swap, it is not a judge artifact.
 
-    SPRAG_MODEL_PATH=/path/to/Llama-3.1-8B PYTHONPATH=. CUDA_VISIBLE_DEVICES=0 \
+None of the paper's reported numbers depend on this module: the real-dialog results (Table 6,
+Table 5) use `kv_harvest4`'s two-choice recognition readout, which is scored by exact
+option match rather than by a judge.
+
+    SPRAG_MODEL_PATH=/path/to/other-family-model PYTHONPATH=. CUDA_VISIBLE_DEVICES=0 \
         python -m kvmemory.cross_judge --ans ./out/allans.jsonl --tag llama-3.1-8b
 """
 from __future__ import annotations

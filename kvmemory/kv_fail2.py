@@ -1,5 +1,5 @@
 """kv_fail2.py -- readout-failure case study, FIXED confidence probe: when the row can't be read out, what does the
-model actually DO -- guess flat (乱蒙), echo the served label, anti-echo it, or refuse?
+model actually DO -- guess flat, echo the served label, anti-echo it, or refuse?
 
 Aggregate scores so far only hint at this, and the hints conflict: at K=4 (menu) failures echo
 the served decoy 92% of the time; at K=2 (open-ended) the two-parameter fit said failures

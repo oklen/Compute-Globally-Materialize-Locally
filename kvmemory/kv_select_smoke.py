@@ -1,18 +1,20 @@
-"""Self-contained mechanism validation for KV sub-selection (IMPL_PLAN_B, Variant 1).
+"""Self-contained validation of the position-preserving KV sub-selection path.
 
-Runs on a real HF model over a CONTROLLED synthetic trajectory — no AMA data, no router-quality
-confound. It exercises the new HFBackend methods (prefill_full / subselect_cache /
-answer_from_cache / _greedy_pos) and produces the IMPL_PLAN_B §9 tables.
+Every experiment in this release serves a chosen subset of a trajectory's cache rows, so the
+sub-selection path itself has to be shown faithful before any result built on it means anything.
+This runs on a real HF model over a controlled synthetic trajectory and exercises the HFBackend
+methods the experiments use (prefill_full / subselect_cache / answer_from_cache / _greedy_pos).
+It also exports `split_wrap_nothink`, the chat-template wrapper the other modules import.
 
-Correctness is tested against the RIGHT oracles (the original harness compared against a *compact*
-re-prefill, which position-preserving subselect legitimately differs from):
+Correctness is tested against the RIGHT oracles (comparing against a *compact* re-prefill would
+be wrong, since position-preserving sub-selection legitimately differs from it):
 
   GATE-A (plumbing identity, confound-free): subselect(keep=ALL) vs a fresh full prefill.
     Same tokens, same positions, no gaps -> must match at first-token argmax (~bf16 noise only).
   GATE-B (faithful drop oracle): subselect(keep=subset) vs FULL-prefill + attention-mask the
     dropped tokens (same KV provenance, same original positions). Must match ~99%.
   INFO  (behavioral delta): subselect vs compact re-prefill of the kept text. Expected to differ
-    (position-preserving vs compact + the kept tokens saw the dropped ones) — this is the main.tex
+    (position-preserving vs compact + the kept tokens saw the dropped ones) — this is the paper's
     'downstream attention trace' signal, reported, NOT a pass/fail.
 
 Then efficiency (kv_select vs re-prefill) and accuracy (do the answers contain the gold fact).
