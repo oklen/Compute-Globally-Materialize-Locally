@@ -4,7 +4,7 @@
 Reproduction code for the paper *Compute Globally, Materialize Locally: The Memory Contract of
 Sparse Event-KV* — Zefeng Cai, Zerui Cai (independent researchers).
 
-📄 **Paper:** arXiv (link TBA)
+📄 **Paper:** [arXiv](https://arxiv.org/abs/2607.23693)
 
 ## What this is
 
@@ -82,7 +82,7 @@ SPRAG_MODEL_PATH=/path/to/Qwen3-8B CUDA_VISIBLE_DEVICES=0 \
   title  = {Compute Globally, Materialize Locally: The Memory Contract of Sparse Event-KV},
   author = {Cai, Zefeng and Cai, Zerui},
   year   = {2026},
-  note   = {arXiv preprint (TBA)}
+  note   = {https://arxiv.org/abs/2607.23693}
 }
 ```
 
