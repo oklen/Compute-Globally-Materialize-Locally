@@ -1,12 +1,20 @@
 # Compute Globally, Materialize Locally
 ### The Memory Contract of Sparse Event-KV
 
-Zefeng Cai, Zerui Cai · independent researchers
+[[Paper](https://arxiv.org/abs/2607.23693)] [[BibTeX](#citation)]
 
-📄 **Paper:** [arXiv:2607.23693](https://arxiv.org/abs/2607.23693) · this repository reproduces every
-experiment in it.
+Zefeng Cai, Zerui Cai · independent researchers · this repository reproduces every experiment in the paper.
 
-## Abstract
+![Write, read, and the reference chain](assets/concept.png)
+
+## TL;DR
+
+> We delete the observation an answer depends on and serve only a later event whose text never
+> names the value. The model still answers with it: among donor-sensitive pairs the split is
+> **99:0** on Qwen3-8B.
+
+<details>
+<summary><b>Abstract</b></summary>
 
 Long-horizon agents increasingly reuse their KV cache as memory: a serving system keeps a subset of
 cached entries and drops the rest. Eviction and episodic-memory schemes therefore rest on a premise
@@ -25,50 +33,61 @@ result is a memory contract for sparse event-KV serving: what to write, where it
 survives once the source is gone. For anyone who evicts the corollary is that dropping a source
 event and observing no accuracy loss does not show the source was unnecessary.
 
-## The experiment, in brief
+</details>
 
-An agent's history is a sequence of events prefilled once, so every event's cache rows are
-*contextualized* by everything before them. Serving that memory is sparse: a query touches a handful
-of events, the system keeps those rows and drops the rest, routinely including the very observation
-that produced the value being asked about.
+## Key finding
 
-So we drop that observation deliberately. One event writes `register S is ONLINE`. A later **root**
-event says only `M mirrors S`, naming no value. We omit the first, serve the second, and ask for `M`:
+An agent's history is prefilled once, so every event's cache rows are *contextualized* by everything
+before them (figure, panel A). Serving that memory is sparse: a query touches a handful of events,
+the system keeps those rows and drops the rest, routinely including the very observation that
+produced the value being asked about.
 
-```
-full history    [ source: S = ONLINE ] .... [ root: "M mirrors S" ] ....
-                           |                           ^
-                           +- attends during prefill --+
+So we drop that observation deliberately. One event writes `register S is ONLINE`; a later **root**
+event says only `M mirrors S`, naming no value. We omit the first, serve the second, and ask for
+`M`. Nothing served names `ONLINE`. The model answers `ONLINE`, and switches to `OFFLINE` when we
+flip the omitted write.
 
-served                 (dropped)                   [ root ] + decoy + query("M?")
-```
+That flip is a **donor pair** (panel B): two histories byte-identical in every served token and
+position, differing only in the value the *omitted* event wrote. If the answer tracks the flip, the
+served rows carry more than their visible text. Accuracy alone cannot show this, because it
+conflates genuine recall with priors and with decoy-elimination; the donor pair, not accuracy, is
+therefore the unit of evidence throughout, and decoys are sampled independently rather than as
+complements of the answer.
 
-Nothing in the served text names `ONLINE`. The model answers `ONLINE`, and switches to `OFFLINE`
-when we flip the omitted write. That flip is a **donor pair**: two histories byte-identical in every
-served token and position, differing only in the value the *omitted* event wrote. If the answer
-tracks the flip, the served rows carry more than their visible text.
+Among donor-sensitive pairs the answer follows the omitted source **99:0** on Qwen3-8B (exact sign
+test, *p* = 3.2×10⁻³⁰). A 256-pair replication gives the prevalence behind that direction: 131 of
+256 pairs are donor-dependent, and among those the split is 130:0. The direction never reverses
+across serving cells, models, or readouts, and the narrowest cell we measure anywhere is still
+39:18. What crosses is state rather than string: a hidden donor phrase transfers verbatim in only
+9.7% of pairs, indistinguishable from the 8% of an isolated re-encoding control, while its semantic
+polarity transfers in 64%.
 
-Accuracy alone cannot establish this, because it conflates genuine recall with priors and with
-decoy-elimination. The donor pair, not accuracy, is therefore the unit of evidence throughout, and
-decoys are sampled independently rather than as complements of the answer.
+We call this **semantic materialization**: the write-time commitment of an upstream-derived state
+into a downstream event representation, without requiring that event's tokens to repeat the state
+verbatim.
 
-## What we find
-
-**The phenomenon is real and directional.** Among donor-sensitive pairs the answer follows the
-omitted source **99:0** on Qwen3-8B (exact sign test, *p* = 3.2×10⁻³⁰). A 256-pair replication gives
-the prevalence behind that direction: 131 of 256 pairs are donor-dependent, and among those the
-split is 130:0. The direction never reverses across serving cells, models, or readouts, and the
-narrowest cell we measure anywhere is still 39:18. What crosses is state rather than string: a
-hidden donor phrase transfers verbatim in only 9.7% of pairs, indistinguishable from the 8% of an
-isolated re-encoding control, while its semantic polarity transfers in 64%.
-
-**A three-part contract governs it.**
+## The memory contract
 
 | Part | What it says | Where |
 |---|---|---|
 | **Trigger** *which events write* | Surface form, not meaning alone. Over a 16-construction bank comprehended at .98 mean (min .77), write-through spans chance to .95, and **no construction writes on all three recent checkpoints**. Materialization and its readout must be calibrated per model, not assumed. | §4 |
 | **Landing** *where the value lives* | The **root** carries the dominant donor-aligned signal. A served **reference edge**, one hop further from the source, mostly routes a query back to the root instead of carrying the value itself. What a row yields depends on what is co-served with it. | §5 |
 | **Access** *what a readout reaches* | A compact-state envelope, not a general channel. Binary state recovers at **.934** against .5 chance; four-way (.223) and eight-way (.156) sit near their chance rates; three-digit numbers are never recovered exactly (**0/192**). | §6 |
+
+![The access envelope](assets/envelope.png)
+
+*Access, in detail. **A**: recovery after the source is dropped, by payload type, against chance
+(dashed). **B**: a write-time compute note moves derived verdicts but never numeric ones. **C**: on
+legacy checkpoints, free generation under-reports what a candidate-logit readout finds.*
+
+## Programming the primitive
+
+![Passive harvest against deliberate carriers](assets/active.png)
+
+*Two sides of the write interface. **A**: on real long-term dialogs, harvesting natural mentions
+shows no detected advantage over isolated encoding of the same text. **B**: a carrier written
+deliberately, still naming no value, moves
+donor-follow from .06 to .51 on Qwen3-8B, with an explicit textual record as the 1.00 upper bound.*
 
 **The primitive is programmable, and that is the engineering handle.** A deliberately written,
 answer-free carrier event lifts donor-aligned recovery from **6% to 51%** on Qwen3-8B without ever
@@ -85,10 +104,12 @@ an eviction-style system actually presents), the LoCoMo cell is *equivalent* to 
 within a ±.05 band (−.011, 95% CI [−.026, +.004]). The controlled arms above use synthetic
 donor-paired trajectories; the natural-dialog result bounds how far they generalise.
 
-**One consequence for anyone who evicts.** An ablation that drops a source event and observes no
-accuracy loss has not shown the source was unnecessary: it may have retained a row that already
-carried the answer. Corrections then follow as served patches rather than recomputation, which is
-also the cheap direction (77 ms to append a patch at *L* = 9.2k, against 1033 ms to recompute).
+## For anyone who evicts
+
+An ablation that drops a source event and observes no accuracy loss has not shown the source was
+unnecessary: it may have retained a row that already carried the answer. Corrections then follow as
+served patches rather than recomputation, which is also the cheap direction (77 ms to append a patch
+at *L* = 9.2k, against 1033 ms to recompute).
 
 ## Setup
 
