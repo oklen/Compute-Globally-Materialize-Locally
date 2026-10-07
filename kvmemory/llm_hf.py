@@ -32,7 +32,25 @@ def _iter_cache_kv(cache):
 
 
 class HFBackend:
-    def __init__(self, model_path: str | None = None, dtype=torch.bfloat16, max_ctx: int | None = None):
+    def __init__(self, model_path: str | None = None, dtype=None, max_ctx: int | None = None):
+        # SPRAG_DTYPE: env-gated like SPRAG_ATTN_IMPL, default UNCHANGED (bfloat16).
+        # Needed for Tesla V100 (sm70), which has no memory-efficient attention kernel for
+        # bfloat16 -- torch reports "Expected query, key and value to all be of dtype:
+        # {Half, Float}. Got BFloat16" and silently falls back to the O(n^2) math backend:
+        # measured 18.76 GB of extra memory for an 8k-token attention and OOM at 16k, versus
+        # 0.06 GB for fp16 through EFFICIENT_ATTENTION. So on sm70 fp16 is forced by the
+        # hardware, not chosen. It IS a numerics change on a paired estimand (harv splices KV
+        # from a long prefill, iso re-encodes in isolation; fp16 has a 5-bit exponent against
+        # bfloat16's 8), so any fp16 run must be declared and cross-checked, never silently
+        # substituted. Ampere and later keep bfloat16 by default.
+        if dtype is None:
+            _dt = (os.environ.get("SPRAG_DTYPE") or "bfloat16").lower()
+            dtype = {"bfloat16": torch.bfloat16, "bf16": torch.bfloat16,
+                     "float16": torch.float16, "fp16": torch.float16,
+                     "float32": torch.float32, "fp32": torch.float32}.get(_dt)
+            if dtype is None:
+                raise ValueError("SPRAG_DTYPE=%r not recognised (bfloat16|float16|float32)" % _dt)
+        self.dtype = dtype
         model_path = model_path or os.environ.get("SPRAG_MODEL_PATH")
         if not model_path:
             raise RuntimeError(

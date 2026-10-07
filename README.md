@@ -26,12 +26,25 @@ this **semantic materialization**: a downstream event's cached rows act as an in
 view of computation whose inputs are gone. It can also be written *on purpose*. A deliberately
 phrased, answer-free event raises donor-aligned recovery from 6% to 51% on Qwen3-8B without ever
 naming the value, whereas passively harvesting natural mentions from long-term dialog yields no
-detected advantage. What such a row carries is specific and bounded. Compact state survives, larger
-payloads decay toward chance, and whether a construction writes at all turns on phrasing rather than
-on meaning alone, so two phrasings the model comprehends equally well can diverge sharply. The
-result is a memory contract for sparse event-KV serving: what to write, where it lands, and what
-survives once the source is gone. For anyone who evicts the corollary is that dropping a source
-event and observing no accuracy loss does not show the source was unnecessary.
+detected advantage — including the rows a deployed retrieval stack selects when the answer-bearing
+turn is withheld, under a same-path positive control that does fire. What a harvested row does carry
+on real dialogs is its own context: read in place, it is a higher-fidelity representation of what
+that row states than a re-encoding of the same text, a gain in fidelity rather than in accuracy. What
+such a row carries is specific and bounded. The model reads back compact state while larger payloads
+decay toward chance, and whether a carried state is read back at all turns on phrasing rather than on
+meaning alone, so two phrasings the model comprehends equally well can diverge sharply; a linear probe
+nonetheless finds the state in the carrier row under every phrasing, so these bounds are on reading,
+not on what the row holds. The result is a memory contract for sparse event-KV serving: what to
+write, where it lands, and what survives once the source is gone. For anyone who evicts the corollary
+is that dropping a source event and observing no accuracy loss does not show the source was
+unnecessary. The same rows are also hard to *address*: the retrieval stages deployed in current
+agent-memory systems cannot tell the event that carries from the one that points at it, so what
+survives eviction is not thereby findable — and on real long-term dialogs a full deployed stack
+surfaces the answer-bearing turn well for single-hop questions and no better than chance for
+multi-hop ones. Read as a measurement rather than a mechanism, the contract inverts two heuristics
+already in deployment: what an agent's own attention marks at eviction time is precisely what it no
+longer needs to keep, and the dominant citation failure is omitting the passages actually used rather
+than decorating an answer with ones that were not.
 
 </details>
 
@@ -60,7 +73,8 @@ test, *p* = 3.2×10⁻³⁰). A 256-pair replication gives the prevalence behind
 across serving cells, models, or readouts, and the narrowest cell we measure anywhere is still
 39:18. What crosses is state rather than string: a hidden donor phrase transfers verbatim in only
 9.7% of pairs, indistinguishable from the 8% of an isolated re-encoding control, while its semantic
-polarity transfers in 64%.
+polarity transfers in 64%. That is Qwen3's rate: whether the wording itself crosses depends on the
+checkpoint (on Gemma-4 it does, 52:0; App. K).
 
 We call this **semantic materialization**: the write-time commitment of an upstream-derived state
 into a downstream event representation, without requiring that event's tokens to repeat the state
@@ -70,9 +84,9 @@ verbatim.
 
 | Part | What it says | Where |
 |---|---|---|
-| **Trigger** *which events write* | Surface form, not meaning alone. Over a 16-construction bank comprehended at .98 mean (min .77), write-through spans chance to .95, and **no construction writes on all three recent checkpoints**. Materialization and its readout must be calibrated per model, not assumed. | §4 |
+| **Trigger** *which events write* | Surface form, not meaning alone — in what the model reads back. Over a 16-construction bank comprehended at .98 mean (min .77), write-through (an output-level rate) spans chance to .95 and **no construction reads back on all three recent checkpoints**, while a linear probe finds the state in the carrier row at **.99–1.00 under every construction** on four checkpoints (App. J). The readout must be calibrated per model, not assumed. | §4, App. J |
 | **Landing** *where the value lives* | The **root** carries the dominant donor-aligned signal. A served **reference edge**, one hop further from the source, mostly routes a query back to the root instead of carrying the value itself. What a row yields depends on what is co-served with it. | §5 |
-| **Access** *what a readout reaches* | A compact-state envelope, not a general channel. Binary state recovers at **.934** against .5 chance; four-way (.223) and eight-way (.156) sit near their chance rates; three-digit numbers are never recovered exactly (**0/192**). | §6 |
+| **Access** *what a readout reaches* | A compact-state readout envelope, not a general channel. Binary state is read back at **.934** against .5 chance; four-way (.223) and eight-way (.156) sit near their chance rates; three-digit numbers are never read back exactly (**0/192**). Probes decode four- and eight-way payloads from the served rows at ≈1.00 (App. J): the limit is in the readout. | §6, App. J |
 
 ![The access envelope](assets/envelope.png)
 
@@ -111,6 +125,26 @@ unnecessary: it may have retained a row that already carried the answer. Correct
 served patches rather than recomputation, which is also the cheap direction (77 ms to append a patch
 at *L* = 9.2k, against 1033 ms to recompute).
 
+## What the revision adds (v2, October 2026)
+
+- **Capacity is not addressability** (§7, App. H). A text index cannot separate the event that carries
+  from the one that points at it: BM25 scores root and edge bit-identically on every item. On LoCoMo,
+  a deployed stack (BM25, Qwen3-Embedding-0.6B, reciprocal-rank fusion, bge-reranker-v2-m3) finds the
+  answer-bearing turn on single-hop questions and no better than chance on multi-hop ones.
+- **Rows a deployed retriever selects** (§8, App. I). With every answer-bearing turn withheld,
+  harvested KV is no better than isolated encoding (−.017, 95% CI [−.042, +.010], n = 1269), while a
+  repaired same-path positive control fires (+.018, p = .040). What a harvested row does carry is its
+  own context: +1.87 log-odds over joint re-encoding when it states the answer, and a value swap
+  shows the gain follows the evidence (interaction +2.97).
+- **Consequences** (§9). On 247 HotpotQA agent trajectories the retrieved documents are the only
+  load-bearing region; the attention an agent accumulates while writing marks what need not be kept;
+  and the dominant citation failure is omission (20.7% of load-bearing passages uncited), not
+  decoration (1.5%).
+- **What the rows hold versus what the model reads** (App. J–L). The carrier row holds the state under
+  every construction on four checkpoints including Qwen3-32B; payloads the model does not read back
+  are linearly present in the served rows; meaning crosses on every checkpoint, wording only on some;
+  on AMA-Bench, gathered KV carries the influence of unselected turns, not their information.
+
 ## Setup
 
 ```bash
@@ -122,8 +156,8 @@ export SPRAG_MODEL_PATH=/path/to/Qwen3-8B     # a local HuggingFace model dir (s
 transformers-5 env), GPU, env vars, and the experiment→figure/table map are in
 [MODEL_AND_ENV_MANIFEST.md](MODEL_AND_ENV_MANIFEST.md).**
 
-Each experiment is a module run with `python -m kvmemory.<name>`; results write to the `--out` path
-(default under `./out/`). Greedy decoding throughout; the frozen model recovers state through its
+Each experiment is a module run from the repository root with `PYTHONPATH=. python -m
+kvmemory.<name>`; results write to the `--out` path (default under `./out/`). Greedy decoding throughout; the frozen model recovers state through its
 native interface — no fine-tuning, no trained reader. A single GPU is sufficient for the recent
 models.
 
@@ -135,14 +169,27 @@ the headline claims — are **Qwen3-8B**, **Ministral-3-8B**, and **Gemma-4-12B*
 as exploratory legacy diagnostics. Most experiments run on Qwen3-8B; 2026 / long-context checkpoints
 may need chunked prefill (`export SPRAG_ENCODE_CHUNK=4096`) and a recent `transformers`. Each model
 is evaluated at one frozen revision, so claims are at the checkpoint level rather than the family
-level.
+level. The v2 probes (App. J, L) add **Qwen3-32B**, which fits on one 80 GB card.
 
-### Data (real-dialog experiments only)
+The real-dialog retrieval runs (§7, App. I) also need **Qwen3-Embedding-0.6B** and
+**bge-reranker-v2-m3** as local directories under `./models/` (pass another root with `--model-dir`);
+the synthetic addressability runs read the embedder from `SPRAG_EMBED_PATH`. A few steps call an
+OpenAI-compatible LLM endpoint (LLM-written hard negatives, the LLM labelling of mention turns, the
+cross-family re-judge, graph ingestion); set `JUDGE_BASE_URL`, `JUDGE_API_KEY` and `JUDGE_MODEL`
+(see `kvmemory/llm_api.py`). Revisions and environments are in the manifest.
 
-The X8 real-dialog audits read two corpora from `./data/` (override with `--lc_path` / `--rt_path`):
+### Data
 
-- **LoCoMo** — `locomo10.json` (public; place at `./data/locomo10.json`).
+The synthetic experiments need no data. The others read from `./data/` (see
+[data/README.md](data/README.md)):
+
+- **LoCoMo** — `locomo10.json` (public; place at `./data/locomo10.json`). X8 audits, §7 retrieval,
+  App. I.
 - **REALTALK** — licensed for evaluation only; **obtain separately** and place under `./data/REALTALK`.
+  X8 audits and the repaired control.
+- **HotpotQA** — the distractor validation split as JSONL at
+  `./data/hotpotqa/hotpot_dev_distractor.jsonl`. §9.
+- **AMA-Bench** — the test split as JSONL at `./data/ama_test.jsonl`. App. L.
 
 ## Experiments → scripts
 
@@ -157,10 +204,28 @@ The X8 real-dialog audits read two corpora from `./data/` (override with `--lc_p
 | **Update side** — patch vs. recomputation, timing | `kv_coherence2`, `kv_recomp`, `kv_timing` |
 | **Faithfulness gates** — KV-path compatibility, numerical + top-1 margin (App. A); Gemma-4 sliding-window oracle (App. D) | `kv_ident`, `kv_identm`, `kv_swgate` |
 | Robustness (frozen seeds / untuned templates) | `kv_frozen` |
+| **Capacity is not addressability** (§7, App. H) — oracle vs. retriever serve sets, root/edge position control, reference arms | `kv_addr`, `kv_addr_e2e` |
+| **Real-dialog retrieval ranking** (§7; "E1") — V/M turn labels, LLM labels, five-arm stack, mention-row follow-up, graph arm and its planted-row gate | `rA_roles`, `rA_loose`, `rA_loose2labels`, `rA_rank`, `rA_mpos`, `rA_graph`, `rA_graph_plant` |
+| **Keeping rows vs. a summary** (§7) — time-to-first-token and storage | `kv_econ` |
+| **Repaired positive control** (§8, App. I; "E3") — LLM-written hard negatives, forced-choice readout, whole-conversation counterfactual, placebo carrier; readout and ranking checks | `kv_e3negs`, `kv_e3ctrl`, `kv_e3probe`, `kv_e3clean`, `kv_e3rank` |
+| **Retriever-selected rows** (§8, App. I; "E2") — value-withheld serve sets, six arms, interval, cross-family re-judge, power; log-odds readout, budget sweep, chain-of-thought, hot window, floor arm | `kv_e2sets`, `kv_e2`, `kv_e2stats`, `kv_e2_rejudge`, `kv_e2power`, `kv_e2negs`, `kv_e2ro`, `kv_e2k`, `kv_e2cot5`, `kv_e2hot`, `kv_e2hot2`, `kv_e2floor` |
+| **The narrow form and its cost** (§8, App. I) — natural serve sets, value swap, latency | `kv_e2natsets`, `kv_e2swap`, `kv_e2cost` |
+| **Representation-level drift** (§8, App. I) — per-turn KV drift between worlds, delimiter vs. content | `kv_e3div`, `kv_e3div2`, `kv_e3div3` |
+| **Consequences** (§9) — HotpotQA agent trajectories, region ablation and source counterfactual (also the "why dropping the source rarely costs accuracy" paragraph), attention-ranked eviction, answer KV as session memory, counterfactual citation check | `kv_traj`, `kv_hnegs`, `kv_region`, `kv_dens`, `kv_ans`, `kv_cite` |
+| **Carrier-row probes** (App. J) — 16-construction bank, designs A/B, four checkpoints | `kv_pbprobe` |
+| **Payload probes vs. the model's readout** (App. J) | `kv_payprobe2` (`kv_payprobe3` for Gemma-4), `kv_payprobe`, `x3_readout` |
+| **Meaning vs. wording** (App. K) | `kv_phantom2` |
+| **AMA-Bench side channel** (§8, App. L) — 8B and 32B readers | `kv_sidechannel2`, `kv_sidechannel3`, on `kv_sidechannel`, `kv_scope`, `kv_equiv` |
 
 **Shared modules:** `llm_hf` (HF backend + KV reuse), `kv_matrix` (KV encode / assemble helpers),
 `kv_select_smoke` (chat-template wrapper), `kv_vartrack` (step-vocabulary templates), `kv_fail2`
-(forced-choice logit probe), `cross_judge` (LLM judge).
+(forced-choice logit probe), `cross_judge` (LLM judge). Added in v2: `llm_api` (OpenAI-compatible
+endpoint), `embed` (Qwen3-Embedding-0.6B), `rA_arms` (the retrieval stack), `locomo` (LoCoMo loader),
+and the AMA-Bench harness `ama_bench`, `components`, `core`.
+
+**Analysis.** `analysis/` holds the scripts that turn module outputs into the v2 numbers; run them
+from inside `analysis/` with the outputs copied in. [analysis/README.md](analysis/README.md) lists
+each script's inputs and the paper element it reports.
 
 Each script's module docstring carries a runnable example, e.g.:
 

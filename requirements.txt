@@ -11,3 +11,10 @@ accelerate
 #     tf5env/bin/pip install "transformers>=5.10" "torch==2.9.*" accelerate tokenizers huggingface_hub
 # torch 2.9 cu12x is needed so the 535 driver can run it (the default tf5 wheel pulls cu130).
 # See MODEL_AND_ENV_MANIFEST.md for the exact versions used to produce the reported numbers.
+
+# v2 experiments (see MODEL_AND_ENV_MANIFEST.md)
+numpy
+scipy                   # kv_e2stats
+rank_bm25               # BM25 arm of the retrieval stack (rA_arms)
+# optional, only for the graph arm (rA_graph, rA_graph_plant):
+#     pip install "graphiti-core==0.11.3" kuzu

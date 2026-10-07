@@ -21,7 +21,7 @@ NATIVE, the compact cache over-exposes it -> the concern is real. A SHORT contro
 one window) must show NATIVE==COMPACT.
 
     SPRAG_MODEL_PATH=/path/to/Gemma-4-12B SPRAG_ATTN_IMPL=sdpa SPRAG_ENCODE_CHUNK=4096 \
-      PYTHONPATH=/home/tiger CUDA_VISIBLE_DEVICES=0 tf5env/bin/python -m kvmemory.kv_swgate \
+      PYTHONPATH=. CUDA_VISIBLE_DEVICES=0 tf5env/bin/python -m kvmemory.kv_swgate \
       --items 24 --gap 2400 --seed 1
 """
 from __future__ import annotations

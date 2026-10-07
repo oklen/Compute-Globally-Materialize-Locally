@@ -7,7 +7,7 @@ first-token argmax mismatch whose margin is <= the path's max|dlogit| is a bf16 
 mismatch whose margin >> deviation would be a real disagreement. Summary prints, for every
 mismatched item, (ref_margin, path_dev) so "tie vs real" is decidable from the numbers.
 
-    SPRAG_MODEL_PATH=/path/to/Qwen3-8B SPRAG_ATTN_IMPL=sdpa PYTHONPATH=/home/tiger \
+    SPRAG_MODEL_PATH=/path/to/Qwen3-8B SPRAG_ATTN_IMPL=sdpa PYTHONPATH=. \
         CUDA_VISIBLE_DEVICES=0 python -m kvmemory.kv_identm --items 24 --seed 1
 """
 from __future__ import annotations

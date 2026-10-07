@@ -9,3 +9,8 @@ out/*.jsonl
 # datasets (obtain separately, see data/README.md)
 data/*
 !data/README.md
+# v2 outputs, caches and graph databases
+out/*/
+out/*.log
+# local model directories (see MODEL_AND_ENV_MANIFEST.md)
+models/

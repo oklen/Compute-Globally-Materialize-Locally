@@ -22,7 +22,7 @@ sequence. This isolates the three candidate causes by holding everything else fi
 
 Reports greedy-output agreement AND max |logit| deviation, since a greedy match can hide drift.
 
-    SPRAG_MODEL_PATH=/path/to/Qwen3-8B SPRAG_ATTN_IMPL=sdpa PYTHONPATH=/home/tiger \
+    SPRAG_MODEL_PATH=/path/to/Qwen3-8B SPRAG_ATTN_IMPL=sdpa PYTHONPATH=. \
         CUDA_VISIBLE_DEVICES=0 python -m kvmemory.kv_ident --items 24 --seed 1
 """
 from __future__ import annotations
