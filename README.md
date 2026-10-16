@@ -5,7 +5,26 @@
 
 Zefeng Cai, Zerui Cai · independent researchers · this repository reproduces every experiment in the paper.
 
-![Write, read, and the reference chain](assets/concept.png)
+A common way to show that a cached event can be evicted is to drop it and check that accuracy holds.
+That check cannot tell an unneeded event from one whose value already lives on in the rows that
+remain. We show that a dropped value does live on there, which we call **semantic materialization**,
+so "we dropped it and accuracy didn't fall" does not show the dropped event was unnecessary.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/concept-dark.png">
+  <img src="assets/concept.png" alt="A: one global prefill lets a later root event absorb the source's state. B: with the source omitted and every served token fixed, the answer flips with the omitted value. C: the reference chain from source to root to edge." width="100%">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/robustness-dark.png">
+  <img src="assets/robustness.png" alt="In every serving cell, model and readout reported, the share of donor-sensitive pairs that follow the omitted value is above one half: from 99:0 on Qwen3-8B to the narrowest cell, 39:18." width="100%">
+</picture>
+
+`99:0` donor-sensitive pairs follow the omitted value on Qwen3-8B (*p* = 3.2×10⁻³⁰; 130:0 on a
+256-pair replication) · `6% → 51%` donor-aligned recovery with one deliberate, answer-free write ·
+`20.7% vs 1.5%` load-bearing passages left uncited vs decorative citations
+
+Agent memory series: [VeraKV](https://github.com/oklen/VeraKV) — what to hand the model · [Compute Globally, Materialize Locally](https://github.com/oklen/Compute-Globally-Materialize-Locally) — what survives eviction · [TracePack](https://github.com/oklen/TracePack) — what survives compaction
 
 ## TL;DR
 
@@ -88,7 +107,10 @@ verbatim.
 | **Landing** *where the value lives* | The **root** carries the dominant donor-aligned signal. A served **reference edge**, one hop further from the source, mostly routes a query back to the root instead of carrying the value itself. What a row yields depends on what is co-served with it. | §5 |
 | **Access** *what a readout reaches* | A compact-state readout envelope, not a general channel. Binary state is read back at **.934** against .5 chance; four-way (.223) and eight-way (.156) sit near their chance rates; three-digit numbers are never read back exactly (**0/192**). Probes decode four- and eight-way payloads from the served rows at ≈1.00 (App. J): the limit is in the readout. | §6, App. J |
 
-![The access envelope](assets/envelope.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/envelope-dark.png">
+  <img src="assets/envelope.png" alt="The access envelope: binary state recovers well above chance, four- and eight-way payloads sit near chance, three-digit numbers are never recovered; a compute note moves derived verdicts; a logit probe finds more than free generation." width="100%">
+</picture>
 
 *Access, in detail. **A**: recovery after the source is dropped, by payload type, against chance
 (dashed). **B**: a write-time compute note moves derived verdicts but never numeric ones. **C**: on
@@ -96,7 +118,10 @@ legacy checkpoints, free generation under-reports what a candidate-logit readout
 
 ## Programming the primitive
 
-![Passive harvest against deliberate carriers](assets/active.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/active-dark.png">
+  <img src="assets/active.png" alt="Passive harvest against deliberate carriers: harvested minus isolated accuracy on real dialogs is near zero; on controlled trajectories donor-follow rises from .06 for a passive mention to .51 for a natural-language compute directive, with explicit text at 1.00." width="100%">
+</picture>
 
 *Two sides of the write interface. **A**: on real long-term dialogs, harvesting natural mentions
 shows no detected advantage over isolated encoding of the same text. **B**: a carrier written
@@ -144,6 +169,17 @@ at *L* = 9.2k, against 1033 ms to recompute).
   every construction on four checkpoints including Qwen3-32B; payloads the model does not read back
   are linearly present in the served rows; meaning crosses on every checkpoint, wording only on some;
   on AMA-Bench, gathered KV carries the influence of unselected turns, not their information.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/consequences-dark.png">
+  <img src="assets/consequences.png" alt="A: dropping the retrieved documents costs 21.99 nats on follow-ups about values the agent never wrote down; dropping the plan, scratchpad, tool input or answer costs about nothing. B: 20.7% of load-bearing passages go uncited, while 1.5% of citations are decorative." width="100%">
+</picture>
+
+*Consequences (§9). **A**: on 247 HotpotQA agent trajectories, only the retrieved documents cost
+much to drop (21.99 nats, against at most 1.52 for any other region), and they are the region that
+region-aware eviction schedules give a low priority and a fast decay. **B**: on 418 cited multi-hop
+answers, citations fail by leaving out passages that were used far more often than by citing
+passages that were not.*
 
 ## Setup
 
@@ -226,6 +262,10 @@ and the AMA-Bench harness `ama_bench`, `components`, `core`.
 **Analysis.** `analysis/` holds the scripts that turn module outputs into the v2 numbers; run them
 from inside `analysis/` with the outputs copied in. [analysis/README.md](analysis/README.md) lists
 each script's inputs and the paper element it reports.
+
+**Figures.** `python figures/make_all.py` redraws every figure on this page, in light and dark
+versions, from the numbers in `figures/data/` and in the scripts; [figures/README.md](figures/README.md)
+maps each figure to its script and to the part of the paper its numbers come from.
 
 Each script's module docstring carries a runnable example, e.g.:
 

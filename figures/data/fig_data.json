@@ -1,0 +1,34 @@
+{
+ "fig4": {
+  "cardinality_sameprotocol": {
+   "bin2": 0.93359375,
+   "dir4": 0.22265625,
+   "name8": 0.15625,
+   "num": 0.0
+  },
+  "nk2": {
+   "bin2": [0.984375, 0.9479166666666666, 192],
+   "num": [0.0, 0.0, 192],
+   "verdict": [0.5416666666666666, 0.703125, 192]
+  },
+  "source": "Paper Sec. 6 (Access) and Fig. 3A-B: menu readout with independent decoys; compute-note setting as (neutral filler, compute note, n)."
+ },
+ "fig4C": {
+  "pairs": [
+   ["Llama consist", 0.1, 0.725],
+   ["Gemma accord", 0.6875, 1.0],
+   ["Gemma inline", 0.375, 1.0],
+   ["Gemma reflect", 0.625, 1.0]
+  ],
+  "source": "Paper App. (legacy-model diagnostics) and Fig. 3C: (construction, free-generation gold rate, candidate-logit gold rate)."
+ },
+ "fig5A": {
+  "cells": [
+   ["Qwen3 / REALTALK", -0.04, -0.104, 0.032],
+   ["Qwen3 / LoCoMo", -0.044, -0.088, 0.005],
+   ["Gemma-4 / REALTALK", 0.012, -0.006, 0.027],
+   ["Gemma-4 / LoCoMo", -0.011, -0.026, 0.004]
+  ],
+  "source": "Paper appendix table of harvested-minus-isolated recognition accuracy (Sec. 8, Fig. 4A): full qualifying set (497 REALTALK / 564 LoCoMo questions, 10 conversation clusters), conversation-clustered bootstrap B=4000, 95% CI."
+ }
+}
