@@ -1,0 +1,28 @@
+{
+ "about": "Config for figures/make_kv_demo.py -> assets/kv-demo.gif. Event texts follow the paper's Discovery example (materialize.tex L214-219). Cache-cell colours are schematic. Every number carries its line in the v2 LaTeX source (paper/materialize.tex).",
+ "canvas": {"width": 1280, "height": 760, "fps": 10},
+ "colors": {
+  "bg": "#0d1117", "fg": "#e6edf3", "muted": "#9198a1", "faint": "#6e7681",
+  "box": "#161b22", "edge": "#3d444d", "cell_empty": "#1c2129", "cell": "#3d444d",
+  "on": "#3fc1a0", "off": "#f0806f", "source": "#f6c66e", "root": "#79b8ff", "attn": "#79b8ff"
+ },
+ "layers": 4,
+ "events": [
+  {"key": "e1", "label": "e₁", "text": "poll queue", "tokens": ["poll", "queue"]},
+  {"key": "src", "label": "source", "text": "register S is ONLINE", "text_off": "register S is OFFLINE",
+   "tokens": ["register", "S", "is", "ONLINE"]},
+  {"key": "e3", "label": "e₃", "text": "read config", "tokens": ["read", "config"]},
+  {"key": "root", "label": "root", "text": "M mirrors S", "tokens": ["M", "mirrors", "S"]},
+  {"key": "e5", "label": "e₅", "text": "sync clock", "tokens": ["sync", "clock"]}
+ ],
+ "question": "What is M?",
+ "answers": {"on": "ONLINE", "off": "OFFLINE"},
+ "seconds": {"intro": 2.5, "compute": 8.0, "evict": 5.0, "ask": 6.5, "donor": 9.0, "result": 8.5},
+ "numbers": {
+  "follow_anti": {"text": "99 : 0", "source": "L208 (Table 1, Qwen3-8B, root only); L221"},
+  "p": {"text": "p = 3.2×10⁻³⁰", "source": "L222"},
+  "replication": {"text": "130 : 0 in a 256-pair replication (131 pairs donor-dependent)", "source": "L222-223; L1897-1899"},
+  "probe": {"text": ".99–1.00", "source": "L312; Table (App. J) L1667-1673"},
+  "takeaway": {"text": "Dropping an event and seeing no accuracy loss does not show the event was unnecessary.", "source": "L68-69; L590-592"}
+ }
+}

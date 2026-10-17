@@ -5,6 +5,12 @@
 
 Zefeng Cai, Zerui Cai · independent researchers · this repository reproduces every experiment in the paper.
 
+<img src="assets/kv-demo.gif" alt="Animated sketch: an agent history is prefilled once and the root event 'M mirrors S' attends back to the source 'register S is ONLINE'; the source is evicted and only the root is served; asked 'What is M?' the model answers ONLINE although no served text says ONLINE; in a donor pair whose evicted source said OFF, the same served text gives OFFLINE; result 99:0 on Qwen3-8B." width="100%">
+
+*A sketch of the main result. The cache cells and their colours are schematic: they show what the
+measurements imply, not real activations. The numbers in the last scene are measured (§3 and
+App. J). Built by [`figures/make_kv_demo.py`](figures/make_kv_demo.py).*
+
 A common way to show that a cached event can be evicted is to drop it and check that accuracy holds.
 That check cannot tell an unneeded event from one whose value already lives on in the rows that
 remain. We show that a dropped value does live on there, which we call **semantic materialization**,

@@ -11,6 +11,7 @@ README switches between them with `<picture>`. Requirements: matplotlib and nump
 | `active.png` | `fig5_active.py` | Fig. 4 (§8) | `data/fig_data.json` (`fig5A`), `data/x9_rates.json` |
 | `robustness.png` | `robustness.py` | Table 1 (§3), Fig. 2A (§5), appendix tables | inline in the script, each row with its line in the paper source |
 | `consequences.png` | `consequences.py` | §9 and its appendix | inline in the script |
+| `kv-demo.gif` | `make_kv_demo.py` | §3 (Discovery) and Fig. 1, App. J | `kv_demo.json`, each number with its line in the paper source |
 
 Script names follow the figure package the paper was drawn with; the paper numbers its figures
 1-4 in the main text as listed above.
@@ -25,3 +26,8 @@ Script names follow the figure package the paper was drawn with; the paper numbe
   their error bars. Every plotted value is unchanged.
 - The Gemma-4 mention-absent count in `robustness.png` (17:0) appears in the paper only in Fig. 2A,
   not in the text.
+- `kv-demo.gif` is a sketch. The cache cells and their colours are schematic: they show what the
+  measurements imply, not real activations or real layer and token counts. The numbers in its last
+  scene are measured: 99:0 and p = 3.2×10⁻³⁰ (L208, L221–222), 130:0 in a 256-pair replication
+  (L222–223), and the App. J probe at .99–1.00 (L312; table L1667–1673). Needs Pillow; the fonts are the
+  DejaVu fonts that ship with matplotlib.
