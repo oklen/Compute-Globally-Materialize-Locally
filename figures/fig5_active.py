@@ -6,12 +6,13 @@
      (passive -> ... -> explicit text upper bound), Qwen3-8B.
 
 Data: data/fig_data.json (fig5A) and data/x9_rates.json (arm -> [mean, lo, hi]).
-Run:  python fig5_active.py   ->  ../assets/active.png  (FIG_THEME=dark -> active-dark.png)"""
+Run:  python fig5_active.py   ->  ../assets/active.png  (FIG_THEME=dark -> active-dark.png;
+      FIG_LANG=zh -> the Chinese copy active-zh.png / active-zh-dark.png)"""
 import json, os
 import numpy as np
 import matplotlib.pyplot as plt
 from _paper_style import (
-    save, DATADIR, panel_title, light_ygrid, light_xgrid,
+    save, DATADIR, panel_title, light_ygrid, light_xgrid, L,
     C_INK, C_MUTED, C_KV, C_NEG, C_ARM,
 )
 
@@ -32,7 +33,7 @@ fig.subplots_adjust(left=0.13, right=0.99, top=0.82, bottom=0.23)
 
 # --- A: real-dialog harvest deficit ---
 ax = fig.add_subplot(gs[0])
-panel_title(ax, "A", "Passive harvest: no detected advantage")
+panel_title(ax, "A", L("Passive harvest: no detected advantage", "passive harvest：没有测出优势"))
 y = np.arange(len(cells))[::-1]
 for yy, (lb, m, lo, hi) in zip(y, cells):
     ax.errorbar(m, yy, xerr=[[m - lo], [hi - m]], fmt="o", color=C_NEG,
@@ -43,17 +44,17 @@ for yy, (lb, m, lo, hi) in zip(y, cells):
 ax.axvline(0, color=C_INK, lw=0.8)
 ax.set_yticks(y); ax.set_yticklabels([c[0].replace("Gemma4", "Gemma-4") for c in cells],
                                      fontsize=6.6)
-ax.set_xlabel("harvested − isolated accuracy"); ax.set_xlim(-0.185, 0.075)
+ax.set_xlabel(L("harvested − isolated accuracy", "准确率之差：harvested − isolated")); ax.set_xlim(-0.185, 0.075)
 ax.set_xticks([-.15, -.1, -.05, 0, .05])
 ax.set_ylim(-0.6, 3.55)
 light_xgrid(ax)
 
 # --- B: active-materialization arms ---
 ax = fig.add_subplot(gs[1])
-panel_title(ax, "B", "Active carriers restore the channel")
+panel_title(ax, "B", L("Active carriers restore the channel", "deliberate carrier 让通道恢复"))
 arms = ["pas", "bind", "dir", "nld", "exp"]
 armlab = ["passive\nmention", "grounded\nbinding", "structured\ndirective",
-          "NL compute\ndirective", "explicit\ntext\n(upper bound)"]
+          "NL compute\ndirective", L("explicit\ntext\n(upper bound)", "显式文本\n（上限）")]
 x = np.arange(5)
 mods = [(m, lab, col) for m, lab, col in MODELS if m in x9]
 w = 0.78 / max(len(mods), 1)
@@ -73,7 +74,7 @@ for i, (mod, lab, col) in enumerate(mods):
                 f"{v[0]:.2f}", ha="center", va="bottom", fontsize=6.4)
 ax.axhline(0.0, color=C_INK, lw=0.75)
 ax.set_xticks(x); ax.set_xticklabels(armlab, fontsize=6.2)
-ax.set_ylabel("donor-follow rate"); ax.set_ylim(0, 1.14)
+ax.set_ylabel(L("donor-follow rate", "donor-follow 比例")); ax.set_ylim(0, 1.14)
 ax.set_yticks([0, .25, .5, .75, 1.0])
 ax.text(0.01, 0.98, "Qwen3-8B · 95% CI", transform=ax.transAxes, ha="left",
         va="bottom", fontsize=6.7, color=C_MUTED)

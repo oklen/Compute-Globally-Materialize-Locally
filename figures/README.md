@@ -4,6 +4,12 @@
 `assets/<name>.png` for GitHub's light theme and `assets/<name>-dark.png` for its dark theme. The
 README switches between them with `<picture>`. Requirements: matplotlib and numpy.
 
+It also draws the Chinese copies used by the Chinese README, `assets/<name>-zh.png`, `assets/<name>-zh-dark.png`
+and `assets/kv-demo-zh.gif` (`--lang en` or `--lang zh` draws one language). They are written the way a Chinese ML
+slide is: Chinese sentences with the terms of art (source, root, donor pair, prefill, readout, ...) in English; the
+event texts, answers, names and every number are as in the English copies. They need a CJK font (Hiragino Sans GB on
+macOS; `_style.CJK` and `CJK_FONTS` in `make_kv_demo.py` list the others they look for).
+
 | README asset | Script | Paper element | Numbers from |
 |---|---|---|---|
 | `concept.png` | `fig1_concept.py` | Fig. 1 | schematic, no data |

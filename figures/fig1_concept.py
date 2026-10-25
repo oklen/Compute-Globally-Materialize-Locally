@@ -8,11 +8,14 @@ Pure schematic (no data). All prose lives in the paper caption, not the image.
   Panel C  the reference chain: source -> root -> edge.
 
 Run:  python fig1_concept.py              ->  ../assets/concept.png
-      FIG_THEME=dark python fig1_concept.py  ->  ../assets/concept-dark.png"""
+      FIG_THEME=dark python fig1_concept.py  ->  ../assets/concept-dark.png
+      FIG_LANG=zh adds -zh (concept-zh.png, concept-zh-dark.png): the Chinese copy. Like a Chinese ML
+      slide, it keeps the terms of art (source, root, donor pair, prefill, ...) in English, and the event
+      texts (M mirrors S, ...) and answers stay as the model's actual input and output."""
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 import matplotlib.pyplot as plt
 from _paper_style import (
-    save, panel_title, C_BG, C_INK, C_MUTED, C_KV, C_KV_TEXT, C_TX, C_POS, C_NEG,
+    save, panel_title, L, mixed_text, C_BG, C_INK, C_MUTED, C_KV, C_KV_TEXT, C_TX, C_POS, C_NEG,
     C_POS_TEXT, C_NEG_TEXT, C_SRC, C_CAR, C_FILL, C_BOX_INK,
 )
 
@@ -28,8 +31,8 @@ def box(ax, x, y, w, h, fc, ec=C_INK, lw=0.8, text="", fs=7.4, tc=None, radius=0
                                 boxstyle=f"round,pad=0.03,rounding_size={radius}",
                                 fc=fc, ec=ec, lw=lw))
     if text:
-        ax.text(x + w / 2, y + h / 2, text, ha="center", va="center", fontsize=fs,
-                color=tc or ink)
+        mixed_text(ax, x + w / 2, y + h / 2, text, ha="center", va="center", fontsize=fs,
+                   color=tc or ink)
 
 
 def arrow(ax, p0, p1, color=C_INK, lw=0.9, rad=0.0):
@@ -44,7 +47,7 @@ fig.subplots_adjust(left=0.015, right=0.995, top=0.87, bottom=0.04)
 
 # ---------------- Panel A: write time ----------------
 ax = fig.add_subplot(gs[0, 0]); ax.set_xlim(0, 10); ax.set_ylim(0, 6); ax.axis("off")
-panel_title(ax, "A", "Write: one global prefill", pad=5)
+panel_title(ax, "A", L("Write: one global prefill", "写入：一次全局 prefill"), pad=5)
 
 # Event stream: the root attends backward to the source.
 specs = [
@@ -60,21 +63,21 @@ for x, w, fc, ec, label in specs:
 xs = 1.48 + 1.90 / 2
 xr = 4.88 + 2.35 / 2
 arrow(ax, (xr, y0 + bh + 0.02), (xs, y0 + bh + 0.02), color=C_KV, lw=1.15, rad=0.35)
-ax.text((xs + xr) / 2, 4.95, "write-time attention", ha="center", fontsize=7.0,
+ax.text((xs + xr) / 2, 4.95, L("write-time attention", "写入时的 attention"), ha="center", fontsize=7.0,
         color=C_KV_TEXT, fontweight="semibold")
 
 # The resulting memory row is the object reused later.
 arrow(ax, (xr, y0 - 0.02), (xr, 1.38), color=C_KV, lw=0.95)
 box(ax, 4.30, 0.24, 3.50, 0.88, "white", ec=C_KV, lw=1.1,
     text="root KV:  $M = \\mathrm{ON}$", fs=7.6, tc=C_KV_TEXT)
-ax.text(xr + 0.22, 1.47, "materializes", ha="left", va="bottom", fontsize=6.6,
+ax.text(xr + 0.22, 1.47, L("materializes", "materialize"), ha="left", va="bottom", fontsize=6.6,
         color=C_MUTED)
 
 # ---------------- Panel B: serve time + donor pair ----------------
 ax = fig.add_subplot(gs[0, 1]); ax.set_xlim(0, 13.7); ax.set_ylim(0, 6); ax.axis("off")
-panel_title(ax, "B", "Read: source omitted; only donor KV changes", pad=5)
+panel_title(ax, "B", L("Read: source omitted; only donor KV changes", "读取：source 被省略，只有 donor KV 不同"), pad=5)
 
-ax.text(5.40, 5.02, "same served tokens + positions", ha="center", fontsize=6.8,
+ax.text(5.40, 5.02, L("same served tokens + positions", "served token 和位置都相同"), ha="center", fontsize=6.8,
         color=C_MUTED)
 
 
@@ -83,12 +86,12 @@ def served_row(ax, y, srcstate, memory, ans, ans_col, ans_text):
     box(ax, 0.25, y, 1.60, 1.22, "white", ec=C_SRC, lw=0.9,
         text="$S = \\mathrm{" + srcstate + "}$", fs=6.9, tc=C_MUTED)
     ax.plot([0.40, 1.70], [y + 1.05, y + 0.17], color=C_NEG, lw=1.25)
-    ax.text(1.05, y - 0.32, "omitted", ha="center", fontsize=6.0, color=C_NEG_TEXT)
+    ax.text(1.05, y - 0.32, L("omitted", "被省略"), ha="center", fontsize=6.0, color=C_NEG_TEXT)
 
     # Root text is fixed; only its harvested KV differs between donors.
     box(ax, 2.65, y, 4.25, 1.22, C_CAR, ec=C_KV, lw=0.85)
-    ax.text(4.78, y + 0.82, "root text:  $M$ mirrors $S$", ha="center", va="center",
-            fontsize=6.9, color=C_BOX_INK)
+    mixed_text(ax, 4.78, y + 0.82, L("root text:  $M$ mirrors $S$", "root 文本：$M$ mirrors $S$"),
+               ha="center", va="center", fontsize=6.9, color=C_BOX_INK)
     ax.text(4.78, y + 0.34, "KV:  $M = \\mathrm{" + memory + "}$", ha="center",
             va="center", fontsize=7.0, color=C_KV, fontweight="semibold")
 
@@ -108,9 +111,11 @@ ax.text(2.43, 2.78, "donor pair", ha="center", va="center", rotation=90,
 
 # ---------------- Panel C: the reference chain (source -> root -> edge) ----------------
 axc = fig.add_subplot(gs[1, :]); axc.set_xlim(0, 14); axc.set_ylim(0, 2); axc.axis("off")
-panel_title(axc, "C", "The reference chain: how far each event sits from the source", pad=3)
+panel_title(axc, "C", L("The reference chain: how far each event sits from the source",
+                        "reference chain：每个 event 离 source 有多远"), pad=3)
 ccy, cch = 0.50, 1.10
-box(axc, 0.55, ccy, 2.75, cch, C_SRC, ec=C_INK, text="source  $e_{\\mathrm{src}}$\nsets the value", fs=6.9)
+box(axc, 0.55, ccy, 2.75, cch, C_SRC, ec=C_INK,
+    text=L("source  $e_{\\mathrm{src}}$\nsets the value", "source  $e_{\\mathrm{src}}$\n写入这个值"), fs=6.9)
 box(axc, 5.30, ccy, 2.75, cch, C_CAR, ec=C_KV, text="root  $e_{\\mathrm{root}}$\n$M$ mirrors $S$", fs=6.9)
 box(axc, 10.05, ccy, 2.75, cch, "white", ec=C_INK, text="edge  $e_{\\mathrm{edge}}$\n$T$ mirrors $M$", fs=6.9)
 ymid = ccy + cch / 2
@@ -119,7 +124,9 @@ arrow(axc, (10.05, ymid), (8.11, ymid), color=C_MUTED, lw=1.0, rad=-0.22)
 axc.text(4.32, ymid + 0.28, "mirrors", ha="center", fontsize=6.3, color=C_MUTED)
 axc.text(9.07, ymid + 0.28, "mirrors", ha="center", fontsize=6.3, color=C_MUTED)
 # Labels hang from just under the boxes (va="top"), so their descenders stay inside the frame.
-axc.text(6.675, ccy - 0.08, "carries the value", ha="center", va="top", fontsize=6.4, color=C_POS_TEXT)
-axc.text(11.425, ccy - 0.08, "routes to the root", ha="center", va="top", fontsize=6.4, color=C_MUTED)
+axc.text(6.675, ccy - 0.08, L("carries the value", "携带这个值"), ha="center", va="top", fontsize=6.4,
+         color=C_POS_TEXT)
+axc.text(11.425, ccy - 0.08, L("routes to the root", "指回 root"), ha="center", va="top", fontsize=6.4,
+         color=C_MUTED)
 
 save(fig, "fig1_concept")

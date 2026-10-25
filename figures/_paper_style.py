@@ -1,16 +1,29 @@
 """Palette and type of the paper's figures, used to draw the README copies of Figs. 1, 4 and 5.
 
 FIG_THEME=dark switches only the background, text and axis colours. The data colours stay the
-paper's, and words drawn on the light event boxes stay dark in both themes."""
+paper's, and words drawn on the light event boxes stay dark in both themes.
+
+FIG_LANG=zh draws the Chinese copy used by the Chinese README (assets/<asset>-zh.png and
+-zh-dark.png): every label goes through L(en, zh), Latin text stays in DejaVu Sans and Chinese
+falls back to the first installed CJK font of _style.CJK."""
 import os
+import re
 
 import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
+from matplotlib import font_manager  # noqa: E402
+from matplotlib.offsetbox import AnnotationBbox, DrawingArea, HPacker, TextArea, VPacker  # noqa: E402
+
+from _style import CJK, _bold_cjk  # noqa: E402
 
 THEME = os.environ.get("FIG_THEME", "light")
 DARK = THEME == "dark"
+LANG = os.environ.get("FIG_LANG", "en")
+if LANG not in ("en", "zh"):
+    raise SystemExit(f"FIG_LANG must be en or zh, not {LANG!r}")
+ZH = LANG == "zh"
 
 # ---- data palette (the paper's; the same in both themes) ----
 C_KV = "#2166AC"     # KV / candidate-logit / primary blue
@@ -64,6 +77,12 @@ plt.rcParams.update({
     "savefig.pad_inches": 0.06,
     "figure.dpi": 150,
 })
+if ZH:
+    # DejaVu Sans first, so Latin text, digits and model names look as in the English copy; Chinese
+    # glyphs fall back to the CJK fonts. _bold_cjk registers the bold face for semibold/bold titles.
+    _bold_cjk()
+    _have = {f.name for f in font_manager.fontManager.ttflist}
+    plt.rcParams["font.family"] = ["DejaVu Sans"] + [f for f in CJK if f in _have]
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATADIR = os.path.join(HERE, "data")
@@ -72,13 +91,57 @@ ASSETS = os.path.join(HERE, "..", "assets")
 ASSET_NAME = {"fig1_concept": "concept", "fig4_access": "envelope", "fig5_active": "active"}
 
 
+def L(en, zh):
+    """The label in the language FIG_LANG selects."""
+    return zh if ZH else en
+
+
 def save(fig, name):
-    """Write assets/<asset>.png, or assets/<asset>-dark.png when FIG_THEME=dark."""
+    """Write assets/<asset>[-zh][-dark].png, as FIG_LANG and FIG_THEME select."""
     os.makedirs(ASSETS, exist_ok=True)
-    path = os.path.join(ASSETS, ASSET_NAME.get(name, name) + ("-dark" if DARK else "") + ".png")
+    path = os.path.join(ASSETS, ASSET_NAME.get(name, name) + ("-zh" if ZH else "") + ("-dark" if DARK else "")
+                        + ".png")
     fig.savefig(path, bbox_inches="tight", dpi=200)
     plt.close(fig)
     print("wrote", os.path.relpath(path, os.path.join(HERE, "..")))
+
+
+_HAN = re.compile(r"[\u2e80-\u9fff\uf900-\ufaff\uff00-\uffef]")   # CJK characters and full-width punctuation
+
+
+def mixed_text(ax, x, y, s, ha="left", va="baseline", **props):
+    """ax.text, except for a line that mixes Chinese with $math$. Mathtext has no font fallback, so
+    Chinese inside a math line would come out as boxes; such a line is drawn as pieces (Chinese text,
+    mathtext) packed side by side on one baseline. English text never takes that path."""
+    lines = s.split("\n")
+    if not any("$" in ln and _HAN.search(ln) for ln in lines):
+        return ax.text(x, y, s, ha=ha, va=va, **props)
+    fs = props.get("fontsize", plt.rcParams["font.size"])
+    space = 0.32 * fs                                   # a DejaVu Sans space, in points
+    rows = []
+    for ln in lines:
+        # Chinese runs stand alone; everything else (math and the Latin words between) stays one mathtext.
+        pieces = []
+        for tok in (t for t in re.split(r"(\$[^$]*\$)", ln) if t):
+            if _HAN.search(tok) or not pieces or _HAN.search(pieces[-1]):
+                pieces.append(tok)
+            else:
+                pieces[-1] += tok
+        children = []
+        for i, p in enumerate(pieces):
+            # the spaces where two pieces meet become a fixed gap
+            gap = (len(pieces[i - 1]) - len(pieces[i - 1].rstrip(" ")) + len(p) - len(p.lstrip(" "))) if i else 0
+            if gap:
+                children.append(DrawingArea(gap * space, 0))
+            children.append(TextArea(p.strip(" "), textprops=props))
+        rows.append(HPacker(children=children, align="baseline", pad=0, sep=0))
+    align = {"left": "left", "center": "center", "right": "right"}[ha]
+    box = VPacker(children=rows, align=align, pad=0, sep=0.16 * fs)
+    ab = AnnotationBbox(box, (x, y), xycoords="data", frameon=False, pad=0,
+                        box_alignment=({"left": 0, "center": 0.5, "right": 1}[ha],
+                                       {"bottom": 0, "baseline": 0, "center": 0.5, "top": 1}[va]))
+    ax.add_artist(ab)
+    return ab
 
 
 def panel_title(ax, letter, title, pad=7):
